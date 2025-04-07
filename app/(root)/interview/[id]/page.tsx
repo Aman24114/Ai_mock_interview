@@ -11,17 +11,19 @@ import {
 import { getCurrentUser } from "@/lib/actions/auth.action";
 import DisplayTechIcons from "@/components/DisplayTechIcons";
 
+interface RouteParams {
+  params: Record<string, string>; // Correct type
+}
+
 const InterviewDetails = async ({ params }: RouteParams) => {
-  const { id } = await params;
-
+  const { id } = params; // No need for await (params is not a Promise)
   const user = await getCurrentUser();
-
+  if (!user?.id) redirect("/"); // User not found, redirect
   const interview = await getInterviewById(id);
-  if (!interview) redirect("/");
-
+  if (!interview) redirect("/"); // Interview not found, redirect
   const feedback = await getFeedbackByInterviewId({
     interviewId: id,
-    userId: user?.id!,
+    userId: user.id, // Safe usage
   });
 
   return (
@@ -48,12 +50,12 @@ const InterviewDetails = async ({ params }: RouteParams) => {
       </div>
 
       <Agent
-        userName={user?.name!}
-        userId={user?.id}
+        userName={user.name || ""}
+        userId={user.id}
         interviewId={id}
         type="interview"
         questions={interview.questions}
-        feedbackId={feedback?.id}
+        feedbackId={feedback?.id || ""}
       />
     </>
   );

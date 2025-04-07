@@ -34,12 +34,10 @@ const Agent = ({
   const [messages, setMessages] = useState<SavedMessage[]>([]);
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [lastMessage, setLastMessage] = useState<string>("");
-
   useEffect(() => {
-    const onCallStart = () => {
+      const onCallStart = () => {
       setCallStatus(CallStatus.ACTIVE);
     };
-
     const onCallEnd = () => {
       setCallStatus(CallStatus.FINISHED);
     };
@@ -89,7 +87,6 @@ const Agent = ({
 
     const handleGenerateFeedback = async (messages: SavedMessage[]) => {
       console.log("handleGenerateFeedback");
-
       const { success, feedbackId: id } = await createFeedback({
         interviewId: interviewId!,
         userId: userId!,
@@ -104,7 +101,6 @@ const Agent = ({
         router.push("/");
       }
     };
-
     if (callStatus === CallStatus.FINISHED) {
       if (type === "generate") {
         router.push("/");
@@ -113,10 +109,8 @@ const Agent = ({
       }
     }
   }, [messages, callStatus, feedbackId, interviewId, router, type, userId]);
-
   const handleCall = async () => {
     setCallStatus(CallStatus.CONNECTING);
-
     if (type === "generate") {
       await vapi.start(process.env.NEXT_PUBLIC_VAPI_WORKFLOW_ID!, {
         variableValues: {
@@ -131,7 +125,6 @@ const Agent = ({
           .map((question) => `- ${question}`)
           .join("\n");
       }
-
       await vapi.start(interviewer, {
         variableValues: {
           questions: formattedQuestions,
@@ -139,12 +132,10 @@ const Agent = ({
       });
     }
   };
-
   const handleDisconnect = () => {
     setCallStatus(CallStatus.FINISHED);
     vapi.stop();
   };
-
   return (
     <>
       <div className="call-view">

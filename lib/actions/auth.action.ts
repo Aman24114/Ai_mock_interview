@@ -2,7 +2,7 @@
 
 import { auth, db } from "@/firebase/admin";
 import { cookies } from "next/headers";
-
+import { FirebaseAppError } from "firebase-admin/app";
 // Session duration (1 week)
 const SESSION_DURATION = 60 * 60 * 24 * 7;
 
@@ -24,7 +24,6 @@ export async function setSessionCookie(idToken: string) {
     sameSite: "lax",
   });
 }
-
 export async function signUp(params: SignUpParams) {
   const { uid, name, email } = params;
 
@@ -49,11 +48,11 @@ export async function signUp(params: SignUpParams) {
       success: true,
       message: "Account created successfully. Please sign in.",
     };
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Error creating user:", error);
 
-    // Handle Firebase specific errors
-    if (error.code === "auth/email-already-exists") {
+    // Safe way to check Firebase errors
+    if (error instanceof FirebaseAppError && error.code === "auth/email-already-exists") {
       return {
         success: false,
         message: "This email is already in use",
@@ -79,8 +78,8 @@ export async function signIn(params: SignInParams) {
       };
 
     await setSessionCookie(idToken);
-  } catch (error: any) {
-    console.log("");
+  } catch (error: unknown) {
+    console.error("Error during sign-in:", error);
 
     return {
       success: false,
@@ -130,3 +129,36 @@ export async function isAuthenticated() {
   const user = await getCurrentUser();
   return !!user;
 }
+export  async function getInterviewsByUserId(userId: string):Promise<Interview[] | null>
+{
+  const interview = await db
+    .collection('interview')
+    .where('userId','==',userId)
+    .orderBy('createdAt','desc')
+    .get();
+    return interview.docs.map((doc)=>({
+      id:doc.id,
+      ...doc.data()
+
+    }))as Interview[];
+  }
+  export async function getLatestInterviews(params: GetLatestInterviewsParams): Promise<Interview[] | null> {
+    const { userId, limit = 20 } = params;
+  
+    const interviewSnapshot = await db
+      .collection('interview')
+      .where('finalized', '==', true)
+      .where('userId', '!=', userId)
+      .orderBy('userId') // required when using '!='
+      .orderBy('createdAt', 'desc')
+      .limit(limit)
+      .get();
+  
+    if (interviewSnapshot.empty) return null;
+  
+    return interviewSnapshot.docs.map((doc) => ({
+      id: doc.id,
+      ...doc.data()
+    })) as Interview[];
+  }
+  
