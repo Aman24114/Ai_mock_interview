@@ -1,5 +1,4 @@
 @import "tailwindcss";
-@import url('https://fonts.googleapis.com/css2?family=Mona+Sans:wght@400;500;600;700&display=swap');
 
 @plugin "tailwindcss-animate";
 
@@ -332,10 +331,4 @@
     opacity: 1;
     transform: translateY(0);
   }
-}
-@font-face {
-  font-family: 'Mona Sans';
-  src: url('/fonts/mona-sans.woff2') format('woff2');
-  font-weight: 200 900;
-  font-display: swap;
 }
